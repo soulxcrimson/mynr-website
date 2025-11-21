@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MyNr • Discord Mining Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#e50914" />
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-dark: #050308;
+      --bg-card: #13020a;
+      --accent: #ff2727;
+      --accent-soft: #ff4757;
+      --accent-glow: rgba(255, 39, 39, 0.6);
+      --text-main: #ffffff;
+      --text-muted: #aaaaaa;
+      --border-soft: rgba(255, 255, 255, 0.05);
+      --shadow-soft: 18px 18px 40px #020005, -18px -18px 40px #24010f;
+      --shadow-soft-sm: 10px 10px 25px #020005, -8px -8px 20px #24010f;
+      --radius-lg: 28px;
+      --radius-md: 20px;
+      --transition-fast: 0.2s ease-out;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #3a050b 0, #050308 45%, #020005 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Particle background canvas */
+    #bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: radial-gradient(circle at top, #3a050b 0, #050308 45%, #020005 100%);
+    }
+
+    /* Global layout */
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 18px 80px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 18px;
+      background: radial-gradient(circle at 30% 30%, #ff4747, #c10808);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-soft-sm);
+      overflow: hidden;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+      display: block;
+    }
+
+    .brand-text h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-text span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    /* Buttons */
+    .btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 16px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(145deg, #0c0105, #1a050c);
+      color: var(--text-main);
+      text-decoration: none;
+      box-shadow: 10px 10px 26px #020005, -8px -8px 20px rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast), opacity 0.15s ease-out;
+    }
+
+    .btn span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #f77b45);
+      border-color: rgba(255, 255, 255, 0.18);
+      box-shadow: 0 0 22px rgba(255, 42, 42, 0.7);
+    }
+
+    .btn-outline {
+      background: linear-gradient(145deg, #080106, #19030d);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(255, 42, 42, 0.55);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 6px 6px 16px #020005, -4px -4px 13px rgba(255, 255, 255, 0.02);
+    }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      gap: 28px;
+      margin-bottom: 36px;
+    }
+
+    .hero-main {
+      padding: 26px 22px;
+      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at top left, rgba(255, 53, 53, 0.1), transparent 60%), #120108;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+
+    .hero-tag span.badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #12f280;
+      box-shadow: 0 0 14px rgba(113, 255, 180, 0.9);
+    }
+
+    .hero h2 {
+      font-size: 2.1rem;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .hero h2 span {
+      color: var(--accent);
+      text-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    .hero p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .hero-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-meta .dot-online {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #12f280;
+      box-shadow: 0 0 16px rgba(113, 255, 180, 0.7);
+    }
+
+    .hero-card {
+      padding: 22px 18px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(145deg, #13020a, #20040f);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-soft-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .hero-card-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .hero-card-title h3 {
+      font-size: 0.98rem;
+      font-weight: 500;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text-muted);
+    }
+
+    .hero-card ul {
+      list-style: none;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: grid;
+      gap: 5px;
+    }
+
+    .hero-card ul li span.cmd {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .hero-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 30px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-header h3 {
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ffb3b3;
+    }
+
+    .section-header span.label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    /* Card grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      border-radius: var(--radius-md);
+      padding: 16px 14px;
+      background: radial-gradient(circle at top left, rgba(255, 71, 71, 0.06), transparent 65%), #120108;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft-sm);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card h4 {
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h4 span.icon {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 18px var(--accent-glow);
+    }
+
+    .card p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .cmd-list {
+      list-style: none;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: grid;
+      gap: 5px;
+    }
+
+    .cmd-list li span.cmd {
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    /* Wide card for staff / partnership */
+    .wide-card {
+      border-radius: var(--radius-md);
+      padding: 16px 14px;
+      background: radial-gradient(circle at top left, rgba(255, 71, 71, 0.06), transparent 65%), #120108;
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft-sm);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: grid;
+      gap: 10px;
+    }
+
+    .wide-card h4 {
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .link {
+      color: #ffb3b3;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(255, 179, 179, 0.6);
+    }
+
+    .link:hover {
+      color: #ffffff;
+      border-bottom-style: solid;
+    }
+
+    /* "What MyNr can do" chips */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: linear-gradient(135deg, rgba(255, 71, 71, 0.1), rgba(0, 0, 0, 0.4));
+      color: var(--text-muted);
+    }
+
+    /* Screenshots section */
+    .screenshots-wrapper {
+      border-radius: var(--radius-lg);
+      padding: 18px 18px 20px;
+      background: radial-gradient(circle at top left, rgba(255, 71, 71, 0.12), transparent 55%), #120108;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-soft);
+    }
+
+    .screen-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .screen-tab {
+      border-radius: 999px;
+      padding: 6px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: radial-gradient(circle at top left, rgba(255, 71, 71, 0.1), rgba(0, 0, 0, 0.9));
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .screen-tab.active {
+      background: linear-gradient(135deg, var(--accent), #f77b45);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 22px rgba(255, 50, 50, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .screen-preview {
+      margin-top: 8px;
+      border-radius: var(--radius-md);
+      background: #050208;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 12px 12px 30px #020005, -10px -10px 25px rgba(255, 255, 255, 0.02);
+      overflow: hidden;
+      min-height: 260px;
+      position: relative;
+    }
+
+    .screen-preview-inner {
+      width: 100%;
+      height: 100%;
+      padding: 10px;
+    }
+
+    .screen-preview img {
+      width: 100%;
+      height: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      border-radius: 18px;
+      display: block;
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+      filter: drop-shadow(0 0 18px rgba(255, 30, 30, 0.4));
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+
+    .screen-preview img.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Scroll reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.38s ease-out, transform 0.38s ease-out;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: 34px;
+      padding-top: 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer span.heart {
+      color: var(--accent);
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 780px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .hero-main {
+        padding: 20px 16px;
+      }
+      .screen-preview {
+        min-height: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+
+<div class="page">
+  <!-- HEADER -->
+  <header class="reveal">
+    <div class="brand">
+      <div class="brand-logo">
+        <!-- logo.png inside assets folder -->
+        <img src="assets/logo.png" alt="MyNr Logo" />
+      </div>
+      <div class="brand-text">
+        <h1>MyNr</h1>
+        <span>Discord Mining • Economy • Reputation</span>
+      </div>
+    </div>
+
+    <nav>
+      <button class="btn btn-outline" type="button" data-scroll="#commands"><span class="dot"></span> Command List</button>
+      <button class="btn btn-outline" type="button" data-scroll="#screens"><span class="dot"></span> Screenshots</button>
+      <button class="btn btn-outline" type="button" data-scroll="#staff"><span class="dot"></span> Staff Tools</button>
+      <a class="btn btn-primary" href="https://discord.com/oauth2/authorize?client_id=1435954406938902671" target="_blank" rel="noopener">
+        <span class="dot"></span> Invite MyNr
+      </a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero reveal">
+    <div class="hero-main">
+      <div class="hero-tag">
+        <span class="badge-dot"></span>
+        <span>LIVE ON DISCORD</span>
+      </div>
+
+      <h2>Red-hot <span>mining economy</span> for your server.</h2>
+      <p>
+        Mine, explore, grind and flex your reputation. MyNr is a fully-featured
+        red soft-UI Discord bot with tools, dungeons, payouts and staff
+        moderation – built for servers that want style <em>and</em> grind.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://discord.com/oauth2/authorize?client_id=1435954406938902671" target="_blank" rel="noopener">
+          <span class="dot"></span> Add MyNr to Discord
+        </a>
+        <a class="btn btn-outline" href="https://discord.gg/GQq8tBUC" target="_blank" rel="noopener">
+          <span class="dot"></span> Join MyNr Official Server
+        </a>
+      </div>
+
+      <div class="hero-meta">
+        <span><span class="dot-online"></span> Always improving</span>
+        <span>Prefix: <strong>. (dot)</strong></span>
+        <span>Made by <strong>@soulxcrimson</strong></span>
+      </div>
+
+      <div class="chips">
+        <div class="chip">Mining & dungeons</div>
+        <div class="chip">Jobs & payouts</div>
+        <div class="chip">Soft-UI embeds</div>
+        <div class="chip">Reputation system</div>
+        <div class="chip">Staff moderation</div>
+      </div>
+    </div>
+
+    <aside class="hero-card">
+      <div class="hero-card-title">
+        <h3>Quick Start</h3>
+        <span class="pill">Try these first</span>
+      </div>
+      <ul>
+        <li><span class="cmd">.daily</span> — grab coins & mine credits</li>
+        <li><span class="cmd">.mine</span> — begin mining runs</li>
+        <li><span class="cmd">.shop</span> — buy tools, food & limited items</li>
+        <li><span class="cmd">.stats</span> — see your mining profile</li>
+      </ul>
+      <div class="hero-card-footer">
+        <span>Use <span class="cmd">.help</span> for full in-discord menu.</span>
+        <button class="btn btn-outline" type="button" data-scroll="#commands">
+          <span class="dot"></span> View All Commands
+        </button>
+      </div>
+    </aside>
+  </section>
+
+  <!-- COMMANDS -->
+  <section id="commands" class="reveal">
+    <div class="section-header">
+      <h3>Command Pages</h3>
+      <span class="label">Everything MyNr can do</span>
+    </div>
+
+    <div class="grid">
+      <!-- Page 1: Earning -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Earning & Mining</h4>
+        <p>Grind coins, mine credits and loot with a progression-based mining system.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.daily</span> — Free coins + credits</li>
+          <li><span class="cmd">.chest</span> — Store / sell items</li>
+          <li><span class="cmd">.explore &lt;amount&gt;</span> — Explore caves</li>
+          <li><span class="cmd">.dungeon &lt;amount&gt;</span> — Dungeon run</li>
+          <li><span class="cmd">.mine</span> — Start mining</li>
+          <li><span class="cmd">.pick</span> — Forest items</li>
+          <li><span class="cmd">.rest</span> — Regenerate credits</li>
+          <li><span class="cmd">.pray</span> — Random buffs</li>
+          <li><span class="cmd">.slot</span> — Spin slots (12h)</li>
+        </ul>
+      </article>
+
+      <!-- Tools & Work -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Tools & Work</h4>
+        <p>Upgrade pickaxes, repair gear and run jobs that pay in MyNr coins.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.equip &lt;tool&gt;</span> — Equip tool</li>
+          <li><span class="cmd">.repair</span> — Repair tool</li>
+          <li><span class="cmd">.shop</span> — Buy tools/items</li>
+          <li><span class="cmd">.workshop</span> — Jobs list</li>
+          <li><span class="cmd">.applyjob &lt;ID&gt;</span> — Apply job</li>
+          <li><span class="cmd">.resignjob &lt;ID&gt;</span> — Resign job</li>
+          <li><span class="cmd">.work</span> — 12h shift</li>
+          <li><span class="cmd">.hardwork</span> — 24h shift</li>
+        </ul>
+      </article>
+
+      <!-- Player info -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Player Info</h4>
+        <p>Track stats, leaderboard position and account balance.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.stats</span> — View stats</li>
+          <li><span class="cmd">.rank</span> — Mining rank</li>
+          <li><span class="cmd">.leaderboard</span> — Leaderboard</li>
+          <li><span class="cmd">.balance</span> — Check balance</li>
+        </ul>
+      </article>
+
+      <!-- Items & Buffs -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Items & Buffs</h4>
+        <p>Manage your consumables and check active boosters.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.buffs</span> — Active buffs</li>
+          <li><span class="cmd">.use &lt;item&gt;</span> — Use items</li>
+        </ul>
+      </article>
+
+      <!-- Social & reputation -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Social & Reputation</h4>
+        <p>Build trust with vouches and reputation leaderboards.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.vouch @user &lt;detail&gt;</span> — Add vouch</li>
+          <li><span class="cmd">.rep @user</span> — View rep</li>
+          <li><span class="cmd">.rep lb</span> — Rep leaderboard</li>
+          <li><span class="cmd">.rep rm @user &lt;index&gt;</span> — Remove fake vouch</li>
+          <li><span class="cmd">.report @user &lt;reason&gt;</span> — Report user</li>
+        </ul>
+      </article>
+
+      <!-- Payout -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Payout System</h4>
+        <p>Robux-style payouts powered by MyNr coins.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.payout @user &lt;amount/item&gt;</span> — Create payout ticket</li>
+          <li><span class="cmd">.gift @user &lt;amount&gt;</span> — Gift coins</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- SCREENSHOTS -->
+  <section id="screens" class="reveal">
+    <div class="section-header">
+      <h3>MyNr Screenshots</h3>
+      <span class="label">Animated previews of the bot in action</span>
+    </div>
+
+    <div class="screenshots-wrapper">
+      <div class="screen-tabs">
+        <button class="screen-tab active" type="button" data-screenshot="screenshots/shop-1.png" data-alt="Shop Screenshot 1">Shop (1)</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/shop-2.png" data-alt="Shop Screenshot 2">Shop (2)</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/mine.png" data-alt="Mine Screenshot">Mine</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/exploration.png" data-alt="Exploration Screenshot">Exploration</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/vouch-logs.png" data-alt="Vouch Logs Screenshot">Vouch Logs</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/vouches.png" data-alt="Vouches Screenshot">Vouches</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/partner-proof-1.png" data-alt="Partner Proof 1">Partner Proof (1)</button>
+        <button class="screen-tab" type="button" data-screenshot="screenshots/partner-proof-2.png" data-alt="Partner Proof 2">Partner Proof (2)</button>
+      </div>
+
+      <div class="screen-preview">
+        <div class="screen-preview-inner">
+          <!-- Default screenshot shown first -->
+          <img id="screenshotImage" src="screenshots/shop-1.png" alt="Shop Screenshot 1" class="visible" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAFF + OTHER -->
+  <section id="staff" class="reveal">
+    <div class="section-header">
+      <h3>Staff & Extras</h3>
+      <span class="label">Moderation, economy in tickets & secrets</span>
+    </div>
+
+    <div class="grid">
+      <!-- Staff Management -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Staff Management</h4>
+        <p>Ticket-centric tools built for moderators.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.manage</span> — Staff commands list</li>
+          <li><span class="cmd">.warn @user &lt;reason&gt;</span> — Warn</li>
+          <li><span class="cmd">.unwarn @user</span> — Unwarn</li>
+          <li><span class="cmd">.to @user &lt;10s|10m|10h|10d&gt;</span> — Timeout</li>
+          <li><span class="cmd">.unmute @user</span> — Remove timeout</li>
+          <li><span class="cmd">.kick @user &lt;reason&gt;</span> — Kick</li>
+          <li><span class="cmd">.ban @user &lt;reason&gt;</span> — Ban</li>
+          <li><span class="cmd">.unban &lt;user_id&gt;</span> — Unban</li>
+          <li><span class="cmd">.case @user</span> — View warnings/reports</li>
+          <li><span class="cmd">.approve / .deny</span> — Approve / deny ticket</li>
+          <li><span class="cmd">.close</span> — Close ticket</li>
+        </ul>
+      </article>
+
+      <!-- Economy in tickets -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Ticket-Safe Economy</h4>
+        <p>Commands allowed inside payout / report tickets.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.balance</span></li>
+          <li><span class="cmd">.gift @user &lt;amount&gt;</span></li>
+        </ul>
+      </article>
+
+      <!-- Other / Hidden -->
+      <article class="card reveal">
+        <h4><span class="icon"></span> Other & Hidden</h4>
+        <p>Little extras and the classic help menu.</p>
+        <ul class="cmd-list">
+          <li><span class="cmd">.s****</span> — Hidden command (100 coins)</li>
+          <li><span class="cmd">.help</span> — Show full menu</li>
+        </ul>
+      </article>
+    </div>
+
+    <div style="margin-top:18px" class="wide-card reveal">
+      <div>
+        <h4>Partnership & Exchange Rate</h4>
+        <p>
+          Official partner:
+          <a class="link" href="https://discord.gg/robuxforfree" target="_blank" rel="noopener">Robux For Free</a> —
+          <strong>30 MyNr Coins = 1 Robux</strong>.
+        </p>
+      </div>
+      <div>
+        <h4>Developer & Socials</h4>
+        <p>
+          Developer / Owner: <strong>@soulxcrimson</strong> on Discord<br />
+          Roblox Profile:
+          <a class="link" href="https://www.roblox.com/users/8329425567/profile" target="_blank" rel="noopener">
+            https://www.roblox.com/users/8329425567/profile
+          </a><br />
+          Show some love by following. ^_^
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>MyNr · Soft-UI red dashboard for Discord mining servers.</span>
+    <span>Made with <span class="heart">♥</span> by soulxcrimson.</span>
+  </footer>
+</div>
+
+<!-- PARTICLE + BUTTON + REVEAL JS -->
+<script>
+  // Smooth scroll for internal buttons
+  document.querySelectorAll("[data-scroll]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = document.querySelector(btn.getAttribute("data-scroll"));
+      if (!target) return;
+      window.scrollTo({
+        top: target.offsetTop - 70,
+        behavior: "smooth"
+      });
+    });
+  });
+
+  // Screenshot tabs
+  const screenTabs = document.querySelectorAll(".screen-tab");
+  const screenshotImage = document.getElementById("screenshotImage");
+
+  function showScreenshot(tab) {
+    const src = tab.dataset.screenshot;
+    const alt = tab.dataset.alt || "Screenshot";
+
+    screenTabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    // restart animation
+    screenshotImage.classList.remove("visible");
+    void screenshotImage.offsetWidth; // force reflow
+    screenshotImage.src = src;
+    screenshotImage.alt = alt;
+    screenshotImage.classList.add("visible");
+  }
+
+  screenTabs.forEach(tab => {
+    tab.addEventListener("click", () => showScreenshot(tab));
+  });
+
+  // Scroll reveal for .reveal elements
+  const revealEls = document.querySelectorAll(".reveal");
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  revealEls.forEach(el => observer.observe(el));
+
+  // Simple red glowing particles on canvas
+  const canvas = document.getElementById("bg");
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+  let w, h;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.size = Math.random() * 2 + 1;
+      this.speedX = (Math.random() - 0.5) * 0.3;
+      this.speedY = (Math.random() * 0.6 + 0.1);
+      this.alpha = Math.random() * 0.6 + 0.1;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      if (this.y > h + 10) {
+        this.y = -10;
+        this.x = Math.random() * w;
+      }
+    }
+    draw() {
+      const grd = ctx.createRadialGradient(
+        this.x, this.y, 0,
+        this.x, this.y, this.size * 3
+      );
+      grd.addColorStop(0, "rgba(255, 70, 70," + this.alpha + ")");
+      grd.addColorStop(1, "rgba(255, 70, 70, 0)");
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initParticles(count) {
+    particles = [];
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  initParticles(100);
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    for (const p of particles) {
+      p.update();
+      p.draw();
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+</script>
+</body>
+</html>
